@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Chrono Study logo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#101216"/>
+      <stop offset="1" stop-color="#050506"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFC766"/>
+      <stop offset="1" stop-color="#FF8A00"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect x="24" y="24" width="464" height="464" rx="112" fill="url(#bg)" stroke="#23262D" stroke-width="3"/>
+
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#1C2027" stroke-width="16"/>
+  <circle cx="256" cy="256" r="150" fill="none" stroke="url(#ring)" stroke-width="16"
+          stroke-linecap="round" stroke-dasharray="700 242" transform="rotate(-90 256 256)" filter="url(#glow)"/>
+
+  <g stroke="#4A505A" stroke-width="6" stroke-linecap="round">
+    <line x1="256" y1="130" x2="256" y2="150"/>
+    <line x1="256" y1="362" x2="256" y2="382"/>
+    <line x1="130" y1="256" x2="150" y2="256"/>
+    <line x1="362" y1="256" x2="382" y2="256"/>
+  </g>
+
+  <g stroke="#F4F6F8" stroke-width="16" stroke-linecap="round" filter="url(#glow)">
+    <line x1="256" y1="256" x2="256" y2="178"/>
+    <line x1="256" y1="256" x2="318" y2="292"/>
+  </g>
+  <circle cx="256" cy="256" r="14" fill="#FFB020"/>
+</svg>

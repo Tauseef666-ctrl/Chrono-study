@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & discussion
+    url: https://github.com/Tauseef666-ctrl/Chrono-study/discussions
+    about: Ask a question or start a discussion about Chrono Study.
+  - name: Security report
+    url: https://github.com/Tauseef666-ctrl/Chrono-study/security/advisories/new
+    about: Report a vulnerability privately.
