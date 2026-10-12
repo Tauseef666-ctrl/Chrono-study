@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Chrono Study</string>
+    <string name="app_tagline">Plan • Focus • Achieve</string>
+    <string name="widget_clock_label">Chrono Clock</string>
+    <string name="widget_description">Live clock with today\'s focus time and goal progress.</string>
+    <string name="notification_channel_focus">Focus sessions</string>
+    <string name="notification_channel_focus_desc">Ongoing focus timer and session completion alerts.</string>
+    <string name="notification_channel_break">Break reminders</string>
+    <string name="notification_channel_break_desc">Break completion alerts.</string>
+    <string name="notification_channel_general">Study reminders</string>
+    <string name="notification_channel_general_desc">Planner and goal reminders.</string>
+    <string name="focus_channel_name">Focus session running</string>
+</resources>
