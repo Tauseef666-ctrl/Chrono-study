@@ -2,11 +2,9 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/widget_description"
     android:initialLayout="@layout/widget_clock"
-    android:minWidth="180dp"
-    android:minHeight="110dp"
     android:previewImage="@drawable/ic_chrono_logo"
     android:resizeMode="horizontal|vertical"
-    android:targetCellWidth="3"
-    android:targetCellHeight="2"
+    android:minWidth="200dp"
+    android:minHeight="140dp"
     android:updatePeriodMillis="1800000"
     android:widgetCategory="home_screen" />
