@@ -1,12 +1,16 @@
 package com.chronostudy.app
 
 import android.app.Application
-import com.chronostudy.app.notification.NotificationHelper
+import com.chronostudy.app.di.AppContainer
 
 class ChronoApplication : Application() {
 
+    lateinit var container: AppContainer
+        private set
+
     override fun onCreate() {
         super.onCreate()
-        NotificationHelper(this).ensureChannels()
+        container = AppContainer(this)
+        container.notificationHelper.ensureChannels()
     }
 }
