@@ -41,6 +41,7 @@ fun BreakScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val nextUp by viewModel.nextUp.collectAsStateWithLifecycle()
 
+
     Column(
         modifier = Modifier
             .fillMaxSize()

@@ -132,8 +132,8 @@ private fun Color.luminance(): Float {
 
 val clockNumerals: TextStyle = TextStyle(
     fontFamily = FontFamily.Monospace,
-    fontWeight = FontWeight.Light,
-    letterSpacing = 2.sp,
+    fontWeight = FontWeight.Bold,
+    letterSpacing = 4.sp,
 )
 
 private val chronoTypography = Typography()

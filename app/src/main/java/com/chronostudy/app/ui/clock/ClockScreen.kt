@@ -73,6 +73,7 @@ fun ClockScreen(
     var lastInteraction by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
     ImmersiveSystemBars()
+    KeepScreenOn()
 
     LaunchedEffect(settings.autoDimEnabled, settings.autoDimAfterMinutes) {
         while (true) {
@@ -128,7 +129,7 @@ fun ClockScreen(
 
             Text(
                 text = formatTime(state.now, settings.use24Hour, settings.showSeconds),
-                style = clockNumerals.copy(fontSize = (64 * settings.clockScale).sp),
+                style = clockNumerals.copy(fontSize = (96 * settings.clockScale).sp),
                 color = MaterialTheme.colorScheme.onSurface,
             )
 
@@ -251,4 +252,13 @@ private fun formatDate(now: LocalDateTime, format: ClockDateFormat): String {
         else -> "EEEE, d MMMM"
     }
     return now.format(DateTimeFormatter.ofPattern(pattern, Locale.getDefault()))
+}
+
+@Composable
+private fun KeepScreenOn() {
+    val view = androidx.compose.ui.platform.LocalView.current
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        view.keepScreenOn = true
+        onDispose { view.keepScreenOn = false }
+    }
 }

@@ -50,6 +50,8 @@ fun FocusTimerScreen(
     var hadSession by remember { mutableStateOf(false) }
     var exited by remember { mutableStateOf(false) }
 
+
+
     LaunchedEffect(state.session) {
         if (state.session != null) {
             hadSession = true
