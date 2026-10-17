@@ -97,21 +97,20 @@ class NotificationHelper(private val context: Context) {
             .build()
 
         val managerCompat = NotificationManagerCompat.from(context)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (androidx.core.content.ContextCompat.checkSelfPermission(
-                    context,
-                    android.Manifest.permission.POST_NOTIFICATIONS,
-                ) != android.content.pm.PackageManager.PERMISSION_GRANTED
-            ) {
-                return
-            }
+        val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            androidx.core.content.ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.POST_NOTIFICATIONS,
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        } else {
+            true
         }
+        if (!hasPermission) return
         try {
             managerCompat.notify(
                 if (isBreak) BREAK_COMPLETE_NOTIFICATION_ID else FOCUS_COMPLETE_NOTIFICATION_ID,
                 notification,
             )
-        } catch (ignored: SecurityException) {
         } catch (ignored: Exception) {
         }
     }
