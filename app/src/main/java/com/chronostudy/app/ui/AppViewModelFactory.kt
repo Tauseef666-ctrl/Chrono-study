@@ -38,7 +38,7 @@ val AppViewModelFactory: ViewModelProvider.Factory = viewModelFactory {
     }
     initializer {
         with(container()) {
-            FocusSetupViewModel(libraryRepository, sessionCoordinator, settingsRepository)
+            FocusSetupViewModel(libraryRepository, sessionCoordinator, settingsRepository, timeProvider)
         }
     }
     initializer {

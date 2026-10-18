@@ -14,6 +14,7 @@ import com.chronostudy.app.domain.time.TimeProvider
 import com.chronostudy.app.domain.timer.SessionTimer
 import com.chronostudy.app.notification.NotificationHelper
 import com.chronostudy.app.service.FocusTimerService
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
 /**
@@ -33,6 +34,8 @@ class SessionCoordinator(
 ) {
 
     suspend fun activeSession(): StudySessionEntity? = sessions.getActiveSession()
+
+    val activeSessionFlow: Flow<StudySessionEntity?> = sessions.activeSession
 
     suspend fun startSession(
         subjectId: Long,
