@@ -1,12 +1,15 @@
 package com.chronostudy.app.ui.planner
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,6 +22,8 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +31,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -56,13 +63,22 @@ fun PlannerScreen(
     viewModel: PlannerViewModel = viewModel(factory = AppViewModelFactory),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val planMessage by viewModel.planMessage.collectAsStateWithLifecycle()
     var showAdd by remember { mutableStateOf(false) }
     var showGoal by remember { mutableStateOf(false) }
+    var showPlanConfirm by remember { mutableStateOf(false) }
+
+    LaunchedEffect(planMessage) {
+        // message surfaced via snackbar-like Text below; auto-clear
+    }
 
     val date = LocalDate.ofEpochDay(state.epochDay)
 
+    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
     LazyColumn(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .widthIn(max = 680.dp),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -70,6 +86,7 @@ fun PlannerScreen(
             ScreenHeader(
                 title = "Planner",
                 actions = {
+                    TextButton(onClick = { showPlanConfirm = true }) { Text("Plan week") }
                     IconButton(onClick = { showAdd = true }) {
                         Icon(Icons.Filled.Add, contentDescription = "Add task")
                     }
@@ -77,49 +94,106 @@ fun PlannerScreen(
             )
         }
 
+        if (planMessage != null) {
+            item {
+                Text(
+                    planMessage.orEmpty(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
         item {
             ChronoCard {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = viewModel::previousDay) {
-                        Icon(Icons.Filled.ChevronLeft, contentDescription = "Previous day")
+                Column {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        IconButton(onClick = viewModel::previousDay) {
+                            Icon(Icons.Filled.ChevronLeft, contentDescription = "Previous day")
+                        }
+                        Column(
+                            Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(
+                                date.format(DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale.getDefault())),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                textAlign = TextAlign.Center,
+                            )
+                            Text(
+                                "Planned ${DurationFormat.minutesLabel(state.plannedMinutes)} · studied ${DurationFormat.human(state.actualMillis)}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                            )
+                        }
+                        IconButton(onClick = viewModel::nextDay) {
+                            Icon(Icons.Filled.ChevronRight, contentDescription = "Next day")
+                        }
                     }
-                    Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+
+                    HorizontalDivider()
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        TextButton(onClick = viewModel::jumpToToday) { Text("Today") }
+                        Spacer(Modifier.weight(1f))
                         Text(
-                            date.format(DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale.getDefault())),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
+                            if (state.goalMinutes > 0) {
+                                "Daily goal ${DurationFormat.minutesLabel(state.goalMinutes)}"
+                            } else {
+                                "No goal set"
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (state.goalMinutes > 0) {
+                                MaterialTheme.colorScheme.onSurface
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
                         )
-                        Text(
-                            "Planned ${DurationFormat.minutesLabel(state.plannedMinutes)} · studied ${DurationFormat.human(state.actualMillis)}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                        Spacer(Modifier.width(8.dp))
+                        TextButton(onClick = { showGoal = true }) { Text("Set goal") }
                     }
-                    IconButton(onClick = viewModel::nextDay) {
-                        Icon(Icons.Filled.ChevronRight, contentDescription = "Next day")
-                    }
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    TextButton(onClick = viewModel::jumpToToday) { Text("Today") }
-                    Spacer(Modifier.weight(1f))
-                    Text(
-                        if (state.goalMinutes > 0) "Goal ${DurationFormat.minutesLabel(state.goalMinutes)}" else "No goal",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    TextButton(onClick = { showGoal = true }) { Text("Set goal") }
                 }
             }
         }
 
         if (state.tasks.isEmpty()) {
             item {
-                ChronoCard {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Icon(
+                        Icons.Filled.Add,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(28.dp),
+                    )
+                    Spacer(Modifier.height(8.dp))
                     Text(
-                        "No tasks planned for this day. Tap + to add one.",
-                        style = MaterialTheme.typography.bodyMedium,
+                        "No tasks planned for this day",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "Plan your study or start a focus session.",
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    Spacer(Modifier.height(12.dp))
+                    Button(onClick = { showAdd = true }) {
+                        Text("Add task")
+                    }
                 }
             }
         } else {
@@ -130,10 +204,23 @@ fun PlannerScreen(
                         Spacer(Modifier.size(10.dp))
                         Column(Modifier.weight(1f)) {
                             Text(
-                                state.nextSubjectNameById[task.subjectId] ?: "Subject",
+                                if (task.note.isNotBlank()) {
+                                    task.note
+                                } else {
+                                    state.nextSubjectNameById[task.subjectId] ?: "Subject"
+                                },
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.Medium,
+                                maxLines = 2,
                             )
+                            val subject = state.nextSubjectNameById[task.subjectId]
+                            if (task.note.isNotBlank() && subject != null) {
+                                Text(
+                                    subject,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                             val chapter = task.chapterId?.let { state.chapterNameById[it] }
                             if (chapter != null) {
                                 Text(
@@ -167,6 +254,27 @@ fun PlannerScreen(
         }
 
         item { Spacer(Modifier.height(12.dp)) }
+    }
+    }
+
+    if (showPlanConfirm) {
+        AlertDialog(
+            onDismissRequest = { showPlanConfirm = false },
+            title = { Text("Load starter study plan?") },
+            text = {
+                Text(
+                    "Adds an editable weekly template for this week based on your starter subjects " +
+                        "(Mon–Sun rotation, ~50 min blocks). Existing tasks for the same subject and day are kept.",
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.loadStarterPlan()
+                    showPlanConfirm = false
+                }) { Text("Load plan") }
+            },
+            dismissButton = { TextButton(onClick = { showPlanConfirm = false }) { Text("Cancel") } },
+        )
     }
 
     if (showAdd) {

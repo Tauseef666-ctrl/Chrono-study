@@ -5,6 +5,9 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -81,6 +84,14 @@ fun ClockScreen(
             if (!settings.autoDimEnabled) continue
             val idle = System.currentTimeMillis() - lastInteraction
             if (idle >= settings.autoDimAfterMinutes * 60_000L) dimmed = true
+        }
+    }
+
+    LaunchedEffect(lastInteraction, controlsVisible) {
+        if (!controlsVisible) return@LaunchedEffect
+        delay(5_000)
+        if (System.currentTimeMillis() - lastInteraction >= 5_000) {
+            controlsVisible = false
         }
     }
 
@@ -191,7 +202,11 @@ fun ClockScreen(
             }
         }
 
-        if (controlsVisible && !dimmed) {
+        AnimatedVisibility(
+            visible = controlsVisible && !dimmed,
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
             Row(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -203,7 +218,7 @@ fun ClockScreen(
                 IconButton(onClick = { lastInteraction = System.currentTimeMillis(); onBreak() }) {
                     Icon(Icons.Filled.Coffee, contentDescription = "Break", tint = ChronoTheme.semantics.accent)
                 }
-                IconButton(onClick = onOpenSettings) {
+                IconButton(onClick = { lastInteraction = System.currentTimeMillis(); onOpenSettings() }) {
                     Icon(Icons.Filled.Settings, contentDescription = "Clock settings")
                 }
                 IconButton(onClick = onExit) {

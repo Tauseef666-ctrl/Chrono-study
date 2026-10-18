@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -106,4 +107,73 @@ class PlannerViewModel(
     fun moveToDay(id: Long, epochDay: Long) = viewModelScope.launch { planner.moveToDay(id, epochDay) }
 
     fun setGoal(minutes: Int) = viewModelScope.launch { goals.setTargetMinutes(selectedDay.value, minutes) }
+
+    private val _planMessage = MutableStateFlow<String?>(null)
+    val planMessage: StateFlow<String?> = _planMessage
+
+    fun clearPlanMessage() {
+        _planMessage.value = null
+    }
+
+    fun loadStarterPlan() {
+        viewModelScope.launch {
+            val subjects = library.allSubjects.first().filter { !it.isArchived }
+            fun idFor(fragment: String): Long? =
+                subjects.firstOrNull { it.name.contains(fragment, ignoreCase = true) }?.id
+
+            val template: Map<java.time.DayOfWeek, List<Pair<String, Int>>> = mapOf(
+                java.time.DayOfWeek.MONDAY to listOf("Programming Using C" to 50, "Operating System" to 50),
+                java.time.DayOfWeek.TUESDAY to listOf("Database" to 50, "Networking" to 50),
+                java.time.DayOfWeek.WEDNESDAY to listOf("Internet" to 50, "Programming Using C" to 50),
+                java.time.DayOfWeek.THURSDAY to listOf("Operating System" to 50, "Database" to 50),
+                java.time.DayOfWeek.FRIDAY to listOf("Networking" to 50, "Internet" to 50),
+                java.time.DayOfWeek.SATURDAY to listOf("Revision" to 60),
+                java.time.DayOfWeek.SUNDAY to listOf("Weekly review" to 60),
+            )
+
+            val today = LocalDate.now(zone)
+            val monday = today.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))
+            var created = 0
+
+            for (dow in java.time.DayOfWeek.entries) {
+                val date = monday.plusDays(dow.value - 1L)
+                val dayTasks = planner.getByDay(date.toEpochDay())
+                for ((key, minutes) in template[dow].orEmpty()) {
+                    val subjectId = idFor(key)
+                    if (subjectId != null) {
+                        if (dayTasks.any { it.subjectId == subjectId }) continue
+                        planner.addTask(
+                            subjectId = subjectId,
+                            chapterId = null,
+                            plannedEpochDay = date.toEpochDay(),
+                            plannedDurationMinutes = minutes,
+                            note = key,
+                        )
+                        created++
+                    } else {
+                        if (dayTasks.any { it.note == key }) continue
+                        val fallbackSubject = subjects.firstOrNull() ?: continue
+                        planner.addTask(
+                            subjectId = fallbackSubject.id,
+                            chapterId = null,
+                            plannedEpochDay = date.toEpochDay(),
+                            plannedDurationMinutes = minutes,
+                            note = key,
+                        )
+                        created++
+                    }
+                }
+            }
+
+            if ((goals.getByDay(today.toEpochDay())?.targetMinutes ?: 0) <= 0) {
+                goals.setTargetMinutes(today.toEpochDay(), 120)
+            }
+
+            _planMessage.value = if (created > 0) {
+                "Starter plan added: $created tasks for this week"
+            } else {
+                "Starter plan already present for this week"
+            }
+        }
+    }
 }
